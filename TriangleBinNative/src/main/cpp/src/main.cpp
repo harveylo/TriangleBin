@@ -1,5 +1,5 @@
 #ifdef WIN32
-    #define SDL_MAIN_HANDLED
+#define SDL_MAIN_HANDLED
 #endif
 #include <SDL.h>
 #include "imgui.h"
@@ -49,10 +49,10 @@ static SDL_GLContext createCtx(SDL_Window *w)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 #endif
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
@@ -187,8 +187,10 @@ int main(int argc, char** argv)
         int deltaX = 0, deltaY = 0;
         int prevX , prevY;
         SDL_GetMouseState(&prevX, &prevY);
-        float frag_percentage = 100;
-        int tri_count = 1;
+        float frag_percentage = 0;
+        float frag_speed = 1;
+        int tri_count = 200;
+        bool auto_increment = false;
         while (!done) {
             SDL_Event e;
 
@@ -239,7 +241,7 @@ int main(int argc, char** argv)
             {
                 ImGui::Begin("Controls");
 
-                ImGui::SetWindowFontScale(2.5);
+                ImGui::SetWindowFontScale(3);
 
                 ImGui::Text("glGetString(GL_VENDOR): \"%s\"", glGetString(GL_VENDOR));
                 ImGui::Text("glGetString(GL_RENDERER): \"%s\"", glGetString(GL_RENDERER));
@@ -259,8 +261,13 @@ int main(int argc, char** argv)
                     frag_percentage = 100;
                 }
 
+                ImGui::Checkbox("Auto Increment", &auto_increment);
+                if (auto_increment) {
+                    ImGui::SliderFloat("ppf", &frag_speed, 0, 10, "%.1f%");
+                    frag_percentage += frag_speed;
+                }
 
-                ImGui::SliderInt("Tris", &tri_count, 0, 300);
+                ImGui::SliderInt("Tris", &tri_count, 0, 200);
 
                 float percentage = frag_percentage;
                 GLint viewport[4];
@@ -271,9 +278,6 @@ int main(int argc, char** argv)
                          percentage / 100.0 * renderer.triangle_count / 2);
 
                 ImGui::Text("Frag Count <= %d\n", renderer.frag_count);
-
-//                frag_percentage += 0.1;
-//                tri_count += (tri_count / 2);
 
                 ImGui::End();
             }
