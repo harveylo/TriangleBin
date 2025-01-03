@@ -1,6 +1,6 @@
 # TriangleBin
 
-English | [中文](https://github.com/Swung0x48/TriangleBin/README_CN.md)
+English | [中文](https://github.com/Swung0x48/TriangleBin/blob/main/README_CN.md)
 
 Yet another tester to test shade order. (Check whether you've got IMR or TBR GPU!)
 

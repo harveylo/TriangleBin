@@ -1,6 +1,6 @@
 # TriangleBin
 
-[English](https://github.com/Swung0x48/TriangleBin/README.md) | 中文
+[English](https://github.com/Swung0x48/TriangleBin/blob/main/README.md) | 中文
 
 一个渲染顺序测试器（看看你的 GPU 是 IMR 还是 TBR！）
 
