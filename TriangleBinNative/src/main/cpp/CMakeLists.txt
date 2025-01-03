@@ -5,6 +5,7 @@
 cmake_minimum_required(VERSION 3.1)
 
 project(TriangleBinNative)
+set(CMAKE_C_STANDARD 99)
 
 if (ANDROID)
     set(CMAKE_CXX_STANDARD 11)
@@ -14,20 +15,14 @@ endif ()
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 if (ANDROID)
-	find_package(SDL2 REQUIRED)
+    find_package(SDL2 REQUIRED)
 else()
-	set(SDL2_LIBRARY ${PROJECT_SOURCE_DIR}/deps/SDL/VisualC/x64/Release/SDL2.lib)
-	set(SDL2_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/SDL/include)
+    set(SDL2_LIBRARY ${PROJECT_SOURCE_DIR}/deps/SDL/VisualC/x64/Release/SDL2.lib)
+    set(SDL2_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/deps/SDL/include)
 endif()
 
-set(IMGUI_PATH deps/imgui)
-set(IMGUI_IMPL_PATH src/imgui_impl)
-
-# Since we're drawing something that's not just a triangle, we're gonna
-# want a library that deals with vectors and matrices. glm is the obvious
-# choice.
-
-add_subdirectory(deps/glm)
+set(IMGUI_PATH ${PROJECT_SOURCE_DIR}/deps/imgui)
+set(IMGUI_IMPL_PATH ${PROJECT_SOURCE_DIR}/src/imgui_impl)
 
 # Use GLES2/GLES3 implementations for Android, GL3 for everything else
 
@@ -38,12 +33,12 @@ else()
 endif()
 
 file(GLOB IMGUI_FILES
-    ${IMGUI_PATH}/*.cpp
-    ${IMGUI_IMPL_PATH}/*.cpp
+        ${IMGUI_PATH}/*.cpp
+        ${IMGUI_IMPL_PATH}/*.cpp
 )
 
 file(GLOB DEMO_FILES
-    src/*.cpp
+        src/*.cpp
 )
 
 if (NOT ANDROID)
@@ -54,22 +49,28 @@ if (NOT ANDROID)
 endif()
 
 
-set(DEMO_SOURCES ${IMGUI_FILES} ${DEMO_FILES} 
-#${GLLOAD_FILES}
+set(DEMO_SOURCES ${IMGUI_FILES} ${DEMO_FILES}
+        #${GLLOAD_FILES}
 )
 
 # Build as a library for Android, as an executable otherwise
 
 if (ANDROID)
+    add_library(hidapi SHARED ${PROJECT_SOURCE_DIR}/deps/SDL/src/hidapi/android/hid.cpp)
+    target_include_directories(hidapi PRIVATE ${PROJECT_SOURCE_DIR}/deps/SDL/src/hidapi/hidapi/hidapi.h)
+
+    target_link_libraries(hidapi log ${SDL2_LIBRARY} android)
+    target_include_directories(hidapi PRIVATE ${SDL2_INCLUDE_DIR})
+
     add_library(demo SHARED
-        ${DEMO_SOURCES}
+            ${DEMO_SOURCES}
     )
-    target_link_libraries(demo android glm GLESv2 GLESv3 EGL log m)
+    target_link_libraries(demo android GLESv2 GLESv3 EGL log m hidapi)
 else()
     add_executable(demo
-        ${DEMO_SOURCES}
+            ${DEMO_SOURCES}
     )
-    target_link_libraries(demo glm ${GLEW_DIR}/lib/Release/x64/glew32.lib opengl32.lib)
+    target_link_libraries(demo ${GLEW_DIR}/lib/Release/x64/glew32.lib opengl32.lib)
     target_include_directories(demo PRIVATE ${GLEW_DIR}/include)
 endif()
 
@@ -79,3 +80,5 @@ target_include_directories(demo PRIVATE ${IMGUI_PATH})
 target_include_directories(demo PRIVATE ${IMGUI_IMPL_PATH})
 target_include_directories(demo PRIVATE ${GLLOAD_PATH})
 target_compile_definitions(demo PRIVATE ${GL_PROFILES})
+
+target_include_directories(demo PRIVATE ${PROJECT_SOURCE_DIR}/deps/glm)
